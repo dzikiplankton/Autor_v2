@@ -9,6 +9,10 @@
 #ifndef STRUKTURY_H_
 #define STRUKTURY_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /// Stała określająca maksymalną długość pojedyńczego słowa.
 #define MAX_WRD 100
 /// Stała określająca maksymalną długość ścierzki dostępu do pliku wraz z jego nazwą.
@@ -30,60 +34,108 @@ typedef struct key_vector_t{
  * @brief Funkcja tworząca nowy @ref key_vector .
  * @return Wskaźnik do stworzonego wektora.
  */
-key_vector *new_key_vector(){
-	key_vector *new;
-	new=(key_vector*)malloc(sizeof(key_vector));
-	new->cap=2;
-	new->oc=0;
-	new->var=(int*)malloc(new->cap*sizeof(int));
-	return new;
-}
+key_vector *new_key_vector();
 
 /**
  * @brief Funkcja usuwająca @ref key_vector .
- * @param *key_p Wskaźnik na wektor do usunięcia.
+ * @param *key_vec_p Wskaźnik na wektor do usunięcia.
  */
-void del_key_vector(key_vector*key_p){
-	free(key_p->var);
-	free(key_p);
-}
+void del_key_vector(key_vector*key_vec_p);
 
 /**
  * @brief Funkcja dodająca wystąpienie do @ref key_vector .
- * @param *key_p Wskaźnik na wektor do którego ma być dodana wartość.
+ * @param *key_vec_p Wskaźnik na wektor do którego ma być dodana wartość.
  * @param key Numer wystąpienia.
  */
-void add_to_key_vector(key_vector*key_p,int key){
-	if(key_p->cap==key_p->oc){
-		key_p->var=(int*)realloc(key_p->var,2*key_p->cap*sizeof(int));
-		key_p->cap*=2;
-	}
-	key_p->var[++key_p->oc]=key;
-}
-
+void add_to_key_vector(key_vector*key_vec_p,int key);
 
 
 /**
- * @brief Struktura węzła drzewa vlc
+ * @brief Struktura węzła drzewa AVL.
  * @details Za pomocą tej struktury zostanie stworzone drzewo przechowujące
  * słowa oraz numery ich wystąpień w tekście.
+ * Drzewo AVL jest drzewem poszukiwań binarnych BST, w którym poddrzewa każdego węzła różnią się wysokością (ilością poziomów) co najwyżej o 1.
+ * Gwarantuje to zrównoważenie drzewa AVL.
  */
-typedef struct noode_t{
+typedef struct node_t{
 	/// Treść słowa.
 	char var[MAX_WRD];
 	/// Lewy syn.
-	struct noode_t * left;
+	struct node_t * left;
 	/// Prawy syn.
-	struct noode_t * right;
+	struct node_t * right;
 	/// Ojciec.
-	struct noode_t * parent;
+	struct node_t * parent;
 	/// Parametr równowagi.
 	short bf;
 	/// Numery wystąpień słów w tekście.
 	key_vector * keys;
-}noode;
+}node;
 
+/**
+ * @brief Funkcja tworząca nowy @ref node .
+ * @param key Numer wystąpienia.
+ * @param var Treść słowa.
+ * @return Wskaźnik do stworzonego węzła.
+ */
+node* new_node(int key,char var[MAX_WRD]);
 
+/**
+ * @brief Funkcja usuwająca @ref in_vector .
+ * @param *no_p Wskaźnik na węzeł do usunięcia.
+ */
+void del_node(node*no_p);
+
+/**
+ * @brief Rotacja węzłów połączonych prawymi krawędziami.
+ * @details W rotacji uczestniczą węzły A i B.
+ *  Węzeł B zajmuje miejsce węzła A, węzeł A staje się lewym dzieckiem węzła B.
+ *  Lewe dziecko węzła B (BL) staje się prawym dzieckiem węzła A.
+ * @param root Korzeń drzewa.
+ * @param A Węzeł, w którym występuje zaburzenie równowagi w prawym poddrzewie.
+ * @return Węzeł drzewa, który zastąpił po rotacji węzeł A (prawe dziecko A).
+ */
+node * AVLrotationRR(node * root, node * A);
+
+/**
+ * * @brief Rotacja węzłów połączonych lewymi krawędziami.
+ * @param root Korzeń drzewa.
+ * @param A Węzeł, w którym występuje zaburzenie równowagi w lewym poddrzewie.
+ * @return Węzeł drzewa, który zastąpił po rotacji węzeł A (lewe dziecko A).
+ */
+node * AVLrotationLL(node * root, node * A);
+
+/**
+ * @brief Rotacja RL jest złożeniem rotacji RR i rotacji LL.
+ * @param root Korzeń drzewa.
+ * @param A Węzeł, w którym występuje zaburzenie równowagi w prawym poddrzewie.
+ * @return Węzeł drzewa, który zastąpił po rotacji węzeł A.
+ */
+node * AVLrotationRL(node * root, node * A);
+
+/**
+ * @brief Rotacja LR jest złożeniem rotacji LL i rotacji RR.
+ * @param root Korzeń drzewa.
+ * @param A Węzeł, w którym występuje zaburzenie równowagi w lewym poddrzewie.
+ * @return Węzeł drzewa, który zastąpił po rotacji węzeł A.
+ */
+node * AVLrotationLR(node * root, node * A);
+
+/**
+ * @brief Wstawianie węzła w drzewie AVL
+ * @details Operacja wstawiania nowego elementu do drzewa AVL jest dwuetapowa.
+ * Pierwszy etap polega na tradycyjnym wstawieniu węzła do drzewa.
+ * Nowy węzeł jest zawsze dodawany w liściu drzewa.
+ * W drugim etapie idąc od rodzica wstawionego węzła ku korzeniowi drzewa sprawdzamy,
+ * czy dodanie węzła nie naruszyło własności AVL. Jeśli tak, to za pomocą odpowiedniej
+ * rotacji węzłów przywracamy równowagę w węźle.
+ * Po wykonaniu rotacji zrównoważenie drzewa zostaje przywrócone, operacja wstawiania
+ * nowego węzła kończy się.
+ * @param root Korzeń drzewa.
+ * @param key Numer wystąpienia.
+ * @param var Wartość słowa.
+ */
+void AVLinsert(node * root, int key,char var[MAX_WRD]);
 
 /**
  * @brief Struktura przechowująca dane uzyskane z plików wejściowych lub(oraz) wcześniej utworzonej bazy.
@@ -91,11 +143,11 @@ typedef struct noode_t{
  */
 typedef struct container_t{
 	/// Wskaźnik na korzeń drzewa zawierającego możliwe słowa oraz numery ich wystąpień.
-	noode *root;
+	node *root;
 	/// Numer wystąpienia ostatniego dodanego słowa;
 	int last_key;
 	/// Wskaźnik na tablicę przechowującą odwołania do słow z pomocą numeru wystąpinia.
-	noode *pointers;
+	node *pointers;
 }container;
 
 
@@ -116,44 +168,20 @@ typedef struct in_vector_t{
  * @brief Funkcja tworząca nowy @ref in_vector .
  * @return Wskaźnik do stworzonego wektora.
  */
-in_vector *new_in_vector(){
-	in_vector *new;
-	new=(in_vector*)malloc(sizeof(in_vector));
-	new->cap=2;
-	new->oc=0;
-	new->var=(char**)malloc(new->cap*sizeof(char*));
-	return new;
-}
+in_vector *new_in_vector();
 
 /**
  * @brief Funkcja usuwająca @ref in_vector .
  * @param *in_p Wskaźnik na wektor do usunięcia.
  */
-void del_in_vector(in_vector*in_p){
-	int i;
-	for(i=0;i<in_p->oc;i++){
-		free(in_p->var[i]);
-	}
-	free(in_p->var);
-	free(in_p);
-}
+void del_in_vector(in_vector*in_p);
 
 /**
  * @brief Funkcja dodająca wystąpienie do @ref in_vector .
  * @param *in_p Wskaźnik na wektor do którego ma być dodana wartość.
  * @param dn (destination) Wystąpienie.
  */
-void add_to_in_vector(in_vector*in_p,char *dn){
-	if(in_p->cap==in_p->oc){
-		in_p->var=(char**)realloc(in_p->var,2*in_p->cap*sizeof(char*));
-		in_p->cap*=2;
-	}
-
-	in_p->var[++in_p->oc]=(char*)malloc(sizeof(int[MAX_DN]));
-	strcpy(in_p->var[in_p->oc],dn);
-}
-
-
+void add_to_in_vector(in_vector*in_p,char *dn);
 
 
 /**
@@ -190,30 +218,12 @@ typedef struct parameters_t{
  * @brief Funkcja tworząca nowy @ref parameters .
  * @return Wskaźnik do stworzonego pola.
  */
-parameters *new_parameters(){
-	parameters *new;
-	new=(parameters*)malloc(sizeof(parameters));
-	new->in=0;
-	new->b_in_v=NULL;
-	new->b_out=0;
-	new->b_out_v="baza.out\0";
-	new->in=0;
-	new->in_v=NULL;
-	new->n_gram=3;
-	new->out=0;
-	new->out_v="generated.out\0";
-	new->par=5;
-	new->wrd=50;
-	return new;
-}
+parameters *new_parameters();
 
 /**
  * @brief Funkcja usuwająca @ref parameters .
  * @param *in_p Wskaźnik na wektor do usunięcia.
  */
-void del_parameters(parameters*in_p){
-	del_in_vector(in_p->in_v);
-	free(in_p);
-}
+void del_parameters(parameters*in_p);
 
 #endif /* STRUKTURY_H_ */
