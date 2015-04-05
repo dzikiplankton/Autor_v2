@@ -5,7 +5,6 @@
  *      Author: zakp2
  */
 
-
 #include "struktury.h"
 
 key_vector *new_key_vector(){
@@ -249,4 +248,28 @@ void AVLinsert(node * root, int key,char var[MAX_WRD])
 	    return ;
 	  }
 	}
+}
+
+parameters *new_parameters(){
+	parameters *new;
+	new=(parameters*)malloc(sizeof(parameters));
+	new->b_in=0;
+	strcpy(new->b_in_v,"biblioteka.txt");
+	new->b_out=0;
+	strcpy(new->b_out_v,"biblioteka.txt");
+	new->in=0;
+	new->in_v=(in_vector*)NULL;
+	new->n_gram=3;
+	new->out=0;
+	strcpy(new->out_v,"wygenerowany.txt");
+	new->par=5;
+	new->wrd=50;
+	new->stat=0;
+	strcpy(new->out_v,"statystyki.txt");
+	return new;
+}
+
+void del_parameters(parameters*in_p){
+	del_in_vector(in_p->in_v);
+	free(in_p);
 }

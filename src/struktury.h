@@ -18,6 +18,8 @@
 /// Stała określająca maksymalną długość ścierzki dostępu do pliku wraz z jego nazwą.
 #define MAX_DN 100
 
+
+
 /**
  * @brief Struktura przechowująca numery wystąpień słowa.
  */
@@ -29,26 +31,6 @@ typedef struct key_vector_t{
 	/// (occupaid) Ilość obecnie zajętych pól w wektorze.
 	int oc;
 }key_vector;
-
-/**
- * @brief Funkcja tworząca nowy @ref key_vector .
- * @return Wskaźnik do stworzonego wektora.
- */
-key_vector *new_key_vector();
-
-/**
- * @brief Funkcja usuwająca @ref key_vector .
- * @param *key_vec_p Wskaźnik na wektor do usunięcia.
- */
-void del_key_vector(key_vector*key_vec_p);
-
-/**
- * @brief Funkcja dodająca wystąpienie do @ref key_vector .
- * @param *key_vec_p Wskaźnik na wektor do którego ma być dodana wartość.
- * @param key Numer wystąpienia.
- */
-void add_to_key_vector(key_vector*key_vec_p,int key);
-
 
 /**
  * @brief Struktura węzła drzewa AVL.
@@ -71,6 +53,87 @@ typedef struct node_t{
 	/// Numery wystąpień słów w tekście.
 	key_vector * keys;
 }node;
+
+/**
+ * @brief Struktura przechowująca dane uzyskane z plików wejściowych lub(oraz) wcześniej utworzonej bazy.
+ * @details
+ */
+typedef struct container_t{
+	/// Wskaźnik na korzeń drzewa zawierającego możliwe słowa oraz numery ich wystąpień.
+	node *root;
+	/// Numer wystąpienia ostatniego dodanego słowa;
+	int last_key;
+	/// Wskaźnik na tablicę przechowującą odwołania do słow z pomocą numeru wystąpinia.
+	node *pointers;
+}container;
+
+/**
+ * @brief Struktura przechowująca nazwy plików z tekstem będącym podstawą generacji..
+ */
+typedef struct in_vector_t{
+	/// Wskaźnik na nazwy.
+	char**var;
+	/// (capacity) Obecna pojemność wektora.
+	int cap;
+	/// (occupaid) Ilość obecnie zajętych pól w wektorze.
+	int oc;
+}in_vector;
+
+/**
+ * @brief Struktura przechowująca imformacje uzyskane za pomocą parametrów uruchomienia programu.
+ *  @details Wartości przyjmowane domyślnie opisane są
+ */
+typedef struct parameters_t{
+	/// Czy podano pliki z tekstem będącym podstawą generacji.
+	int in;
+	/// Wektor przechowujący nazwy plików z tekstem będącym podstawą generacji.
+	in_vector*in_v;
+	/// Którego stopnia n-gramy mają zostać użyte do generacji.
+	int n_gram;
+	/// Czy określono miejsce zapisu wygenerowanego tekstu.
+	int out;
+	/// Miejsce zapisu wygenerowanego tekstu.
+	char out_v [MAX_DN];
+	/// Czy kożystać z wcześniej utworzonej bazy danych.
+	int b_in;
+	/// Miejsce zapisu bazy danych która ma być wykorzystana.
+	char b_in_v [MAX_DN];
+	/// Czy utworzyć bazę danych.
+	int b_out;
+	/// Miejsce zapisu bazy danych która ma być utworzona.
+	char b_out_v [MAX_DN];
+	/// Ilość akapitów w generowanym tekście.
+	int par;
+	/// Ilość słów w akapicie w generowanym tekście.
+	int wrd;
+	/// Czy generować statystyki.
+	int stat;
+	///Miejsce zapisu statystyk.
+	char stat_out_v [MAX_DN];
+}parameters;
+
+
+
+/**
+ * @brief Funkcja tworząca nowy @ref key_vector .
+ * @return Wskaźnik do stworzonego wektora.
+ */
+key_vector *new_key_vector();
+
+/**
+ * @brief Funkcja usuwająca @ref key_vector .
+ * @param *key_vec_p Wskaźnik na wektor do usunięcia.
+ */
+void del_key_vector(key_vector*key_vec_p);
+
+/**
+ * @brief Funkcja dodająca wystąpienie do @ref key_vector .
+ * @param *key_vec_p Wskaźnik na wektor do którego ma być dodana wartość.
+ * @param key Numer wystąpienia.
+ */
+void add_to_key_vector(key_vector*key_vec_p,int key);
+
+
 
 /**
  * @brief Funkcja tworząca nowy @ref node .
@@ -137,32 +200,7 @@ node * AVLrotationLR(node * root, node * A);
  */
 void AVLinsert(node * root, int key,char var[MAX_WRD]);
 
-/**
- * @brief Struktura przechowująca dane uzyskane z plików wejściowych lub(oraz) wcześniej utworzonej bazy.
- * @details
- */
-typedef struct container_t{
-	/// Wskaźnik na korzeń drzewa zawierającego możliwe słowa oraz numery ich wystąpień.
-	node *root;
-	/// Numer wystąpienia ostatniego dodanego słowa;
-	int last_key;
-	/// Wskaźnik na tablicę przechowującą odwołania do słow z pomocą numeru wystąpinia.
-	node *pointers;
-}container;
 
-
-
-/**
- * @brief Struktura przechowująca nazwy plików z tekstem będącym podstawą generacji..
- */
-typedef struct in_vector_t{
-	/// Wskaźnik na nazwy.
-	char**var;
-	/// (capacity) Obecna pojemność wektora.
-	int cap;
-	/// (occupaid) Ilość obecnie zajętych pól w wektorze.
-	int oc;
-}in_vector;
 
 /**
  * @brief Funkcja tworząca nowy @ref in_vector .
@@ -184,35 +222,6 @@ void del_in_vector(in_vector*in_p);
 void add_to_in_vector(in_vector*in_p,char *dn);
 
 
-/**
- * @brief Struktura przechowująca imformacje uzyskane za pomocą parametrów uruchomienia programu.
- *  @details Wartości przyjmowane domyślnie opisane są
- */
-typedef struct parameters_t{
-	/// Czy podano pliki z tekstem będącym podstawą generacji.
-	int in;
-	/// Wektor przechowujący nazwy plików z tekstem będącym podstawą generacji.
-	in_vector*in_v;
-	/// Którego stopnia n-gramy mają zostać użyte do generacji.
-	int n_gram;
-	/// Czy określono miejsce zapisu wygenerowanego tekstu.
-	int out;
-	/// Miejsce zapisu wygenerowanego tekstu.
-	char out_v [MAX_DN];
-	/// Czy kożystać z wcześniej utworzonej bazy danych.
-	int b_in;
-	/// Miejsce zapisu bazy danych która ma być wykorzystana.
-	char b_in_v [MAX_DN];
-	/// Czy utworzyć bazę danych.
-	int b_out;
-	/// Miejsce zapisu bazy danych która ma być utworzona.
-	char b_out_v [MAX_DN];
-	/// Ilość akapitów w generowanym tekście.
-	int par;
-	/// Ilość słów w akapicie w generowanym tekście.
-	int wrd;
-}parameters;
-
 
 /**
  * @brief Funkcja tworząca nowy @ref parameters .
@@ -225,5 +234,7 @@ parameters *new_parameters();
  * @param *in_p Wskaźnik na wektor do usunięcia.
  */
 void del_parameters(parameters*in_p);
+
+
 
 #endif /* STRUKTURY_H_ */
