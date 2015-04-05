@@ -39,10 +39,7 @@ in_vector *new_in_vector(){
 	return new;
 }
 
-/**
- * @brief Funkcja usuwająca @ref in_vector .
- * @param *in_p Wskaźnik na wektor do usunięcia.
- */
+
 void del_in_vector(in_vector*in_p){
 	int i;
 	for(i=0;i<in_p->oc;i++){
@@ -52,11 +49,6 @@ void del_in_vector(in_vector*in_p){
 	free(in_p);
 }
 
-/**
- * @brief Funkcja dodająca wystąpienie do @ref in_vector .
- * @param *in_p Wskaźnik na wektor do którego ma być dodana wartość.
- * @param dn (destination) Wystąpienie.
- */
 void add_to_in_vector(in_vector*in_p,char *dn){
 	if(in_p->cap==in_p->oc){
 		in_p->var=(char**)realloc(in_p->var,2*in_p->cap*sizeof(char*));
